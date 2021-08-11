@@ -12,6 +12,7 @@
 #include <QString>
 #include <QGraphicsPixmapItem>
 #include <QLabel>
+#include <QImage>
 
 class ImageViewer : public QMainWindow
 {
@@ -59,6 +60,7 @@ private:
     QAction *nextAction;
 
     QString currentImagePath;
+    QImage currentImageContent;
     QGraphicsPixmapItem *currentImage;
 };
 

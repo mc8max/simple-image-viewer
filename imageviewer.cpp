@@ -7,6 +7,7 @@
 ImageViewer::ImageViewer(QWidget *parent) :
     QMainWindow(parent),
     fileMenu(nullptr),
+    currentImageContent(nullptr),
     currentImage(nullptr)
 {
     initUI();
@@ -118,16 +119,16 @@ void ImageViewer::showImage(QString path)
     imageView->resetTransform();
 
     // Set Image
-    QImage image(path);
-    QPixmap pixMap = QPixmap::fromImage(image);
+    currentImageContent.load(path);
+    QPixmap pixMap = QPixmap::fromImage(currentImageContent);
     currentImage = imageScene->addPixmap(pixMap);
     imageScene->update();
-    imageView->setSceneRect(image.rect());
+    imageView->setSceneRect(currentImageContent.rect());
 
     // Set status
     QString status = QString("%1, %2x%3, %4 Bytes")
-            .arg(path).arg(image.width())
-            .arg(image.height()).arg(QFile(path).size());
+            .arg(path).arg(currentImageContent.width())
+            .arg(currentImageContent.height()).arg(QFile(path).size());
     mainStatusLabel->setText(status);
     currentImagePath = path;
 }
