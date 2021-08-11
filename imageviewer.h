@@ -13,6 +13,7 @@
 #include <QGraphicsPixmapItem>
 #include <QLabel>
 #include <QImage>
+#include <QSlider>
 
 class ImageViewer : public QMainWindow
 {
@@ -29,6 +30,10 @@ private:
     void initActions();
     void initShortcuts();
     void showImage(QString);
+    void updateStatus();
+    float getFactorA();
+    float getFactorB();
+    float getFactorGamma();
 
     /* Private slots */
 private slots:
@@ -36,6 +41,9 @@ private slots:
     void zoomIn();
     void zoomOut();
     void saveAs();
+    void prevImage();
+    void nextImage();
+    void updateImage();
 
     /* Private fields */
 private:
@@ -44,6 +52,7 @@ private:
 
     QToolBar *fileToolBar;
     QToolBar *viewToolBar;
+    QToolBar *transformToolBar;
 
     QGraphicsScene *imageScene;
     QGraphicsView *imageView;
@@ -58,6 +67,15 @@ private:
     QAction *zoomOutAction;
     QAction *prevAction;
     QAction *nextAction;
+
+    QLabel *aFactorLabel;
+    QSlider *aFactorSlider;
+
+    QLabel *bFactorLabel;
+    QSlider *bFactorSlider;
+
+    QLabel *gammaFactorLabel;
+    QSlider *gammaFactorSlider;
 
     QString currentImagePath;
     QImage currentImageContent;

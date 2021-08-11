@@ -13,6 +13,7 @@ ImageViewer::ImageViewer(QWidget *parent) :
     initUI();
     initActions();
     initShortcuts();
+    updateStatus();
 }
 
 ImageViewer::~ImageViewer()
@@ -29,7 +30,44 @@ void ImageViewer::initUI()
 
     // setup toolbar
     fileToolBar = addToolBar("File");
-    viewToolBar = addToolBar("File");
+    viewToolBar = addToolBar("View");
+
+    transformToolBar = new QToolBar();
+    addToolBar(Qt::RightToolBarArea, transformToolBar);
+
+    aFactorLabel = new QLabel(transformToolBar);
+    aFactorLabel->setText("Factor 'a':");
+    transformToolBar->addWidget(aFactorLabel);
+
+    aFactorSlider = new QSlider(transformToolBar);
+    aFactorSlider->setRange(-10, 10);
+    aFactorSlider->setSliderPosition(1);
+    aFactorSlider->setOrientation(Qt::Horizontal);
+    transformToolBar->addWidget(aFactorSlider);
+
+    bFactorLabel = new QLabel(transformToolBar);
+    bFactorLabel->setText("Factor 'b':");
+    transformToolBar->addWidget(bFactorLabel);
+
+    bFactorSlider = new QSlider(transformToolBar);
+    bFactorSlider->setRange(-50, 50);
+    bFactorSlider->setSliderPosition(0);
+    bFactorSlider->setOrientation(Qt::Horizontal);
+    transformToolBar->addWidget(bFactorSlider);
+
+    gammaFactorLabel = new QLabel(transformToolBar);
+    gammaFactorLabel->setText("Factor 'gamma':");
+    transformToolBar->addWidget(gammaFactorLabel);
+
+    gammaFactorSlider = new QSlider(transformToolBar);
+    gammaFactorSlider->setRange(-5, 5);
+    gammaFactorSlider->setSliderPosition(1);
+    gammaFactorSlider->setOrientation(Qt::Horizontal);
+    transformToolBar->addWidget(gammaFactorSlider);
+
+    connect(aFactorSlider, SIGNAL(valueChanged(int)), this, SLOT(updateImage()));
+    connect(bFactorSlider, SIGNAL(valueChanged(int)), this, SLOT(updateImage()));
+    connect(gammaFactorSlider, SIGNAL(valueChanged(int)), this, SLOT(updateImage()));
 
     // main area for image display
     imageScene = new QGraphicsScene(this);
@@ -40,7 +78,6 @@ void ImageViewer::initUI()
     mainStatusBar = statusBar();
     mainStatusLabel = new QLabel(mainStatusBar);
     mainStatusBar->addPermanentWidget(mainStatusLabel);
-    mainStatusLabel->setText("Image Information will be here!");
 }
 
 void ImageViewer::initActions()
@@ -133,6 +170,15 @@ void ImageViewer::showImage(QString path)
     currentImagePath = path;
 }
 
+void ImageViewer::updateStatus()
+{
+    QString status = QString("a=%1, b=%2, gamma=%3")
+            .arg(int(getFactorA()))
+            .arg(int(getFactorB()))
+            .arg(int(getFactorGamma()));
+    mainStatusLabel->setText(status);
+}
+
 void ImageViewer::zoomIn()
 {
     imageView->scale(1.2, 1.2);
@@ -143,8 +189,49 @@ void ImageViewer::zoomOut()
     imageView->scale(1/1.2, 1/1.2);
 }
 
+void ImageViewer::prevImage()
+{
+
+}
+
+void ImageViewer::nextImage()
+{
+
+}
+
+void ImageViewer::updateImage()
+{
+    updateStatus();
+}
+
 void ImageViewer::saveAs()
 {
 
 }
 
+float ImageViewer::getFactorA()
+{
+    if (aFactorSlider != nullptr)
+    {
+        return float(aFactorSlider->value());
+    }
+    return 1.0;
+}
+
+float ImageViewer::getFactorB()
+{
+    if (bFactorSlider != nullptr)
+    {
+        return float(bFactorSlider->value());
+    }
+    return 0;
+}
+
+float ImageViewer::getFactorGamma()
+{
+    if (gammaFactorSlider != nullptr)
+    {
+        return float(gammaFactorSlider->value());
+    }
+    return 1.0;
+}
