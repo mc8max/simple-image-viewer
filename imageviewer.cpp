@@ -3,11 +3,15 @@
 #include <QApplication>
 #include <QFileDialog>
 #include <QImage>
+#include <math.h>
+
+int transformColor(int value, float a, float b, float gamma);
 
 ImageViewer::ImageViewer(QWidget *parent) :
     QMainWindow(parent),
     fileMenu(nullptr),
     currentImageContent(nullptr),
+    updatedImageContent(nullptr),
     currentImage(nullptr)
 {
     initUI();
@@ -156,16 +160,22 @@ void ImageViewer::showImage(QString path)
     imageView->resetTransform();
 
     // Set Image
-    currentImageContent.load(path);
-    QPixmap pixMap = QPixmap::fromImage(currentImageContent);
+    if (currentImageContent == nullptr)
+    {
+        currentImageContent = new QImage();
+    }
+
+    currentImageContent->load(path);
+    QPixmap pixMap = QPixmap::fromImage(*currentImageContent);
     currentImage = imageScene->addPixmap(pixMap);
     imageScene->update();
-    imageView->setSceneRect(currentImageContent.rect());
+    imageView->setSceneRect(currentImageContent->rect());
 
     // Set status
     QString status = QString("%1, %2x%3, %4 Bytes")
-            .arg(path).arg(currentImageContent.width())
-            .arg(currentImageContent.height()).arg(QFile(path).size());
+            .arg(path).arg(currentImageContent->width())
+            .arg(currentImageContent->height())
+            .arg(QFile(path).size());
     mainStatusLabel->setText(status);
     currentImagePath = path;
 }
@@ -202,6 +212,41 @@ void ImageViewer::nextImage()
 void ImageViewer::updateImage()
 {
     updateStatus();
+    if (currentImageContent != nullptr)
+    {
+        float factorA = getFactorA();
+        float factorB = getFactorB();
+        float factorGamma = getFactorGamma();
+        if (factorA == 1.0 && factorB == 0.0 && factorGamma == 1.0)
+        {
+            return;
+        }
+
+        if (updatedImageContent == nullptr)
+        {
+            updatedImageContent = new QImage(currentImageContent->width(), currentImageContent->height(), currentImageContent->format());
+        }
+
+        for (int i = 0; i < currentImageContent->width(); i++)
+        {
+            for (int j = 0; j < currentImageContent->height(); j++)
+            {
+                QRgb color = currentImageContent->pixel(i, j);
+                int newRed = transformColor(qRed(color), factorA, factorB, factorGamma);
+                int newGreen = transformColor(qGreen(color), factorA, factorB, factorGamma);
+                int newBlue = transformColor(qBlue(color), factorA, factorB, factorGamma);
+                QRgb newColor = qRgb(newRed, newGreen, newBlue);
+                updatedImageContent->setPixel(i, j, newColor);
+            }
+        }
+
+        imageScene->clear();
+        imageView->resetTransform();
+        QPixmap pixMap = QPixmap::fromImage(*updatedImageContent);
+        currentImage = imageScene->addPixmap(pixMap);
+        imageScene->update();
+        imageView->setSceneRect(updatedImageContent->rect());
+    }
 }
 
 void ImageViewer::saveAs()
@@ -234,4 +279,20 @@ float ImageViewer::getFactorGamma()
         return float(gammaFactorSlider->value());
     }
     return 1.0;
+}
+
+int transformColor(int value, float a, float b, float gamma)
+{
+    float newValue = value;
+    newValue = newValue * a + b;
+    newValue = pow(newValue, 1 / gamma);
+    if (newValue < 0)
+    {
+        return 0;
+    }
+    else if (newValue >= 255.0)
+    {
+        return 255;
+    }
+    return int(newValue);
 }

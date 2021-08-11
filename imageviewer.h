@@ -78,7 +78,8 @@ private:
     QSlider *gammaFactorSlider;
 
     QString currentImagePath;
-    QImage currentImageContent;
+    QImage *currentImageContent;
+    QImage *updatedImageContent;
     QGraphicsPixmapItem *currentImage;
 };
 
